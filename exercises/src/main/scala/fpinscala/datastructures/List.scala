@@ -50,15 +50,34 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldRight(ns, 1.0)(_ * _) // `_ * _` is more concise notation for `(x,y) => x * y`; see sidebar
 
 
-  def tail[A](l: List[A]): List[A] = ???
+  def tail[A](l: List[A]): List[A] = l match {
+    case Nil => throw new Exception("Empty lists do not have tails")
+    case Cons(_, xs) => xs
+  }
 
-  def setHead[A](l: List[A], h: A): List[A] = ???
+  def setHead[A](l: List[A], h: A): List[A] = l match {
+    case Nil => List(h)
+    case Cons(_, xs) => Cons(h, xs)
+  }
 
-  def drop[A](l: List[A], n: Int): List[A] = ???
 
-  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = ???
+  def drop[A](l: List[A], n: Int): List[A] = (l, n) match {
+    case (_, 0) => l
+    case (Nil, _) => throw new Exception("Cannot remove more elements than the list contains")
+    case (Cons(_,xs),_) =>   drop(xs, n - 1)
+  }
 
-  def init[A](l: List[A]): List[A] = ???
+  def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
+    case Nil => Nil
+    case Cons(h, xs) if f(h) => dropWhile(xs, f)
+    case _ => l
+  }
+
+  def init[A](l: List[A]): List[A] = l match {
+    case Nil => throw new Exception("Cannot remove last member of empty List")
+    case Cons(_,Cons(x, Nil)) => Cons(x, Nil)
+    case Cons(x, xs) => Cons(x, init(xs))
+  }
 
   def length[A](l: List[A]): Int = ???
 
