@@ -37,8 +37,7 @@ object List { // `List` companion object. Contains functions for creating and wo
       case Cons(h,t) => Cons(h, append(t, a2))
     }
 
-  def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
-    as match {
+  def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = as match {
       case Nil => z
       case Cons(x, xs) => f(x, foldRight(xs, z)(f))
     }
@@ -64,24 +63,28 @@ object List { // `List` companion object. Contains functions for creating and wo
   def drop[A](l: List[A], n: Int): List[A] = (l, n) match {
     case (_, 0) => l
     case (Nil, _) => throw new Exception("Cannot remove more elements than the list contains")
-    case (Cons(_,xs),_) =>   drop(xs, n - 1)
+    case (Cons(_,xs), _) =>   drop(xs, n - 1)
   }
 
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
     case Nil => Nil
     case Cons(h, xs) if f(h) => dropWhile(xs, f)
-    case _ => l
+    case Cons(h, xs) => Cons(h, dropWhile(xs, f))
   }
 
   def init[A](l: List[A]): List[A] = l match {
     case Nil => throw new Exception("Cannot remove last member of empty List")
-    case Cons(_,Cons(x, Nil)) => Cons(x, Nil)
+    case Cons(_, Nil) => Nil
     case Cons(x, xs) => Cons(x, init(xs))
   }
 
-  def length[A](l: List[A]): Int = ???
+  def length[A](l: List[A]) = {
+    foldRight(l, 0)( (_, y) => y+1)
+  }
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = ???
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = ???
+  /*def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = ???
+
+  def map[A,B](l: List[A])(f: A => B): List[B] = ???*/
 }
+
