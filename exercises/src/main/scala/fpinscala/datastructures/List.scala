@@ -1,5 +1,7 @@
 package fpinscala.datastructures
 
+import scala.annotation.tailrec
+
 sealed trait List[+A] // `List` data type, parameterized on a type, `A`
 case object Nil extends List[Nothing] // A `List` data constructor representing the empty list
 /* Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`,
@@ -54,6 +56,11 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Cons(_, xs) => xs
   }
 
+  def head[A](l: List[A]): A = l match {
+    case Cons(h, _) => h
+    case Nil => throw new Exception("List must not be empty")
+  }
+
   def setHead[A](l: List[A], h: A): List[A] = l match {
     case Nil => List(h)
     case Cons(_, xs) => Cons(h, xs)
@@ -82,9 +89,72 @@ object List { // `List` companion object. Contains functions for creating and wo
     foldRight(l, 0)( (_, y) => y+1)
   }
 
+  @tailrec
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+      case Cons(h, Nil) => f(z, h)
+      case Cons(h,_) => foldLeft(drop(l, 1), f(z, h))(f)
+      case _ => z
+  }
 
-  /*def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = ???
+  def sum3(ns: List[Int]) =
+    foldLeft(ns, 0)(_+_)
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = ???*/
+  def product3(ns: List[Double]) =
+    foldLeft(ns, 1.0)(_*_)
+
+  def length3[A](ns: List[A]) =
+    foldLeft(ns, 0)( (y, _) => y + 1)
+
+  def reverse[A](ns: List[A]): List[A] = {
+    foldLeft(drop(ns,1), List(head(ns)))( (x, y) => Cons(y, x))
+  }
+
+  def append_value[A](ns: List[A], z:A): List[A] = {
+    foldRight(ns, Cons(z, Nil))( (a, b) => Cons(a, b))
+  }
+
+  def append2[A](xs: List[A], ys:List[A]): List[A] = {
+    foldRight(xs, ys)(Cons(_, _))
+  }
+
+  def append3[A](ns: List[A], z:A): List[A] = {
+    reverse(setHead(reverse(ns), z))
+  }
+
+  def concat[A](l: List[List[A]]): List[A] = {
+    // foldLeft(l, Nil:List[A])( (x,y) => append2(x,y) ) This is not linear, but n^2
+    foldRight(l, Nil:List[A])( (x,y) => append2(x,y))
+  }
+
+  def map[A,B](as: List[A])(f: A => B):List[B] = {
+    foldRight(as, Nil:List[B])( (x,y) => Cons(f(x), y))
+  }
+
+  def filter[A](as: List[A])(f: A => Boolean): List[A] = as match {
+    case Nil => Nil
+    case Cons(x, xs) => if (f(x)) Cons(x, filter(xs)(f)) else filter(xs)(f)
+  }
+
+  def filter2[A](as: List[A])(f: A => Boolean): List[A] = {
+    foldRight(as, Nil:List[A])((x,xs) => if (f(x)) Cons(x, xs) else xs)
+  }
+
+  def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] = {
+    foldRight(as, Nil:List[B])((x, xs) => append(f(x), xs))
+  }
+
+  def flatMap2[A,B](as: List[A])(f: A => List[B]): List[B] = {
+    concat(map(as)(f))
+  }
+
+  def filter3[A](as: List[A])(f: A => Boolean): List[A] = {
+    flatMap2(as)( x => if (f(x)) Cons(x,Nil) else Nil:List[A])
+  }
+
+  def zipWith[A](xs: List[A], ys: List[A])(f: (A,A) => A): List[A] = (xs, ys) match {
+    case (Nil, Nil) => Nil
+    case (_, Nil) => _
+    case (Nil, _) => _
+    case (Cons(a, as), Cons(b, bs)) => Cons(f(a,b), zipWith(as, bs)(f))
+  }
 }
-
