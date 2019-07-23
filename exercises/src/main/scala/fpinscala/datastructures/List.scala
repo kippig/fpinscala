@@ -66,10 +66,10 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Cons(_, xs) => Cons(h, xs)
   }
 
-
+  @tailrec
   def drop[A](l: List[A], n: Int): List[A] = (l, n) match {
     case (_, 0) => l
-    case (Nil, _) => throw new Exception("Cannot remove more elements than the list contains")
+    case (Nil, _) => Nil
     case (Cons(_,xs), _) =>   drop(xs, n - 1)
   }
 
@@ -153,8 +153,26 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def zipWith[A](xs: List[A], ys: List[A])(f: (A,A) => A): List[A] = (xs, ys) match {
     case (Nil, Nil) => Nil
-    case (_, Nil) => _
-    case (Nil, _) => _
+    case (l, Nil) => l
+    case (Nil, l) => l
     case (Cons(a, as), Cons(b, bs)) => Cons(f(a,b), zipWith(as, bs)(f))
   }
+
+  def take[A](as: List[A], n: Int): List[A] = (as, n) match {
+    case (_, 0) => Nil
+    case (Cons(y, ys), _) =>  Cons(y, take(ys, n-1))
+    case (Nil, _) => Nil
+  }
+
+  def startsWith[A](l: List[A], k: List[A]): Boolean = (l, k) match  {
+    case (Nil, Nil) => true
+    case (Nil, _) => false
+    case _  => k == take(l, length(k))
+  }
+
+  @tailrec
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    if (startsWith(sup, sub)) true else hasSubsequence(drop(sup, 1), sub)
+  }
+
 }
